@@ -1,0 +1,66 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "supersaas-analytics",
+	"compatibility_date": "2026-06-30",
+	"compatibility_flags": ["nodejs_compat"],
+	"workers_dev": false,
+	"preview_urls": false,
+	// Uncomment and set your hostname; see docs/self-hosting.md.
+	// "routes": [
+	// 	{
+	// 		"pattern": "analytics.example.com",
+	// 		"custom_domain": true
+	// 	}
+	// ],
+	"observability": {
+		"logs": {
+			"enabled": true,
+			"head_sampling_rate": 1,
+			"persist": true,
+			"invocation_logs": true
+		},
+		"traces": {
+			"enabled": true,
+			"head_sampling_rate": 1,
+			"persist": true
+		}
+	},
+	"upload_source_maps": true,
+	"vars": {
+		// The public origin for emailed auth links and OAuth callbacks, such as "https://analytics.example.com".
+		"NUXT_AUTH_URL": "",
+		// The origin Sites load /sd.js from. Leave empty to use the dashboard's own origin.
+		"NUXT_PUBLIC_TRACKER_ORIGIN": "",
+		"NUXT_EMAIL_FROM": ""
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "supersaas-analytics-db",
+			"database_id": "<your D1 database id>",
+			"migrations_table": "_hub_migrations",
+			"migrations_dir": ".output/server/db/migrations/sqlite/"
+		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "KV",
+			"id": "<your supersaas-analytics-kv id>"
+		},
+		{
+			"binding": "CACHE",
+			"id": "<your supersaas-analytics-cache id>"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "BLOB",
+			"bucket_name": "supersaas-analytics"
+		}
+	],
+	"triggers": {
+		// Must match nitro.scheduledTasks in nuxt.config.ts: the daily Rollup at 00:10 UTC, the Digests at 00:40 UTC and
+		// the hourly search sync.
+		"crons": ["10 0 * * *", "40 0 * * *", "25 * * * *"]
+	}
+}

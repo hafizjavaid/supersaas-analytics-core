@@ -1,0 +1,38 @@
+/* Crimson: warm taupe greys with a deep rose red. Loud and memorable. */
+:root {
+  --ui-radius: 0.25rem;
+  --ui-color-primary-50: var(--color-rose-50);
+  --ui-color-primary-100: var(--color-rose-100);
+  --ui-color-primary-200: var(--color-rose-200);
+  --ui-color-primary-300: var(--color-rose-300);
+  --ui-color-primary-400: var(--color-rose-400);
+  --ui-color-primary-500: var(--color-rose-500);
+  --ui-color-primary-600: var(--color-rose-600);
+  --ui-color-primary-700: var(--color-rose-700);
+  --ui-color-primary-800: var(--color-rose-800);
+  --ui-color-primary-900: var(--color-rose-900);
+  --ui-color-primary-950: var(--color-rose-950);
+  --ui-color-neutral-50: var(--color-taupe-50);
+  --ui-color-neutral-100: var(--color-taupe-100);
+  --ui-color-neutral-200: var(--color-taupe-200);
+  --ui-color-neutral-300: var(--color-taupe-300);
+  --ui-color-neutral-400: var(--color-taupe-400);
+  --ui-color-neutral-500: var(--color-taupe-500);
+  --ui-color-neutral-600: var(--color-taupe-600);
+  --ui-color-neutral-700: var(--color-taupe-700);
+  --ui-color-neutral-800: var(--color-taupe-800);
+  --ui-color-neutral-900: var(--color-taupe-900);
+  --ui-color-neutral-950: var(--color-taupe-950);
+}
+
+:root, .light {
+  --ui-primary: var(--ui-color-primary-700);
+  --ui-bg: var(--ui-color-neutral-50);
+  --ui-bg-muted: var(--ui-color-neutral-100);
+}
+
+.dark {
+  --ui-primary: var(--ui-color-primary-400);
+  --ui-bg: var(--ui-color-neutral-950);
+  --ui-bg-muted: var(--ui-color-neutral-900);
+}

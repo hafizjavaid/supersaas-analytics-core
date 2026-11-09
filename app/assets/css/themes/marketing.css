@@ -1,0 +1,64 @@
+/* Marketing: the website and the auth pages, on whichever page calls useMarketingTheme(). The app keeps its own theme.
+   Rounded green: Nunito over Source Sans 3 on paper, green ink and accent, a faint ruled texture.
+   Replacing this file re-themes them all; keep every custom property, since components and main.css read them. */
+.marketing-theme {
+  --font-display: "Nunito", ui-rounded, sans-serif;
+  --font-sans: "Source Sans 3", sans-serif;
+  --marketing-heading-weight: 800;
+  --marketing-heading-tracking: -0.02em;
+
+  --marketing-bg: #edebde;
+  --marketing-surface: #f6f4ea;
+  --marketing-ink: #1a2b22;
+  --marketing-muted: #4d5c53;
+  --marketing-dimmed: #7b877f;
+  --marketing-border: #d9d5c3;
+  --marketing-accent: #1f7a4d;
+  --marketing-on-accent: #ffffff;
+
+  --marketing-radius: 12px;
+  --marketing-radius-lg: 16px;
+  --marketing-shadow: 0 24px 50px -28px rgb(26 43 34 / 0.35);
+  --marketing-texture: repeating-linear-gradient(to bottom, transparent 0 31px, rgb(26 43 34 / 0.06) 31px 32px);
+
+  --marketing-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --marketing-duration-rise: 700ms;
+  --marketing-duration-trace: 2400ms;
+}
+
+.dark .marketing-theme {
+  --marketing-bg: #0f1a15;
+  --marketing-surface: #15241d;
+  --marketing-ink: #ebe9dc;
+  --marketing-muted: #a8b5ad;
+  --marketing-dimmed: #77867d;
+  --marketing-border: #22362c;
+  --marketing-accent: #4cc38a;
+  --marketing-on-accent: #0f1a15;
+  --marketing-shadow: 0 24px 50px -28px rgb(0 0 0 / 0.7);
+  --marketing-texture: repeating-linear-gradient(to bottom, transparent 0 31px, rgb(235 233 220 / 0.04) 31px 32px);
+}
+
+.marketing-theme {
+  --ui-bg: var(--marketing-bg);
+  --ui-bg-elevated: var(--marketing-surface);
+  --ui-bg-muted: var(--marketing-surface);
+  --ui-bg-accented: var(--marketing-border);
+  --ui-bg-inverted: var(--marketing-ink);
+  --ui-border: var(--marketing-border);
+  --ui-border-muted: var(--marketing-border);
+  --ui-border-accented: var(--marketing-dimmed);
+  --ui-border-inverted: var(--marketing-ink);
+  --ui-text: var(--marketing-ink);
+  --ui-text-highlighted: var(--marketing-ink);
+  --ui-text-toned: var(--marketing-ink);
+  --ui-text-muted: var(--marketing-muted);
+  --ui-text-dimmed: var(--marketing-dimmed);
+  --ui-text-inverted: var(--marketing-on-accent);
+  --ui-primary: var(--marketing-accent);
+  /* Nuxt UI's rounded-md is 1.5 × --ui-radius, so its controls match --marketing-radius. */
+  --ui-radius: calc(var(--marketing-radius) / 1.5);
+  font-family: var(--font-sans);
+  letter-spacing: normal;
+  background-image: var(--marketing-texture);
+}

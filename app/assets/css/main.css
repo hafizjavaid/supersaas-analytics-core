@@ -1,0 +1,77 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+/* Pick one: ember, cobalt, ledger, ultraviolet, crimson. */
+@import "./themes/ledger.css";
+
+@theme {
+  --font-sans: 'Manrope', sans-serif;
+  --font-display: 'Manrope', sans-serif;
+  --font-caption: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* Marketing token classes. Their values come from themes/marketing.css, so they work only under .marketing-theme. */
+@theme inline {
+  --radius-marketing: var(--marketing-radius);
+  --radius-marketing-lg: var(--marketing-radius-lg);
+  --shadow-marketing: var(--marketing-shadow);
+}
+
+/* Marketing-only styles on components the app shares (AuthCard, AuthHeading): outside .marketing-theme an unset
+   token would wipe the app's own value. */
+@custom-variant marketing (&:where(.marketing-theme *));
+
+@utility marketing-heading {
+  font-family: var(--font-display);
+  font-weight: var(--marketing-heading-weight);
+  letter-spacing: var(--marketing-heading-tracking);
+}
+
+@layer base {
+  body {
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Nuxt UI's defaults are one step too faint for the small mono captions, such as "7 days free · no card". */
+:root, .light {
+  --ui-text-dimmed: var(--ui-color-neutral-500);
+  --ui-text-muted: var(--ui-color-neutral-600);
+  --ui-text-toned: var(--ui-color-neutral-700);
+  --ui-text: var(--ui-color-neutral-800);
+  --ui-text-highlighted: var(--ui-color-neutral-950);
+  --ui-text-inverted: white;
+  --ui-bg-inverted: var(--ui-color-neutral-950);
+  --ui-border-inverted: var(--ui-color-neutral-950);
+}
+
+.dark {
+  --ui-text-dimmed: var(--ui-color-neutral-400);
+  --ui-text-muted: var(--ui-color-neutral-300);
+  --ui-text-toned: var(--ui-color-neutral-200);
+  --ui-text: var(--ui-color-neutral-100);
+  --ui-text-highlighted: var(--ui-color-neutral-50);
+  --ui-text-inverted: var(--ui-color-neutral-950);
+  --ui-bg-inverted: var(--ui-color-neutral-50);
+  --ui-border-inverted: var(--ui-color-neutral-50);
+}
+@utility ranked-list-enter {
+  animation: ranked-list-enter 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes ranked-list-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ranked-list-enter {
+    animation: none;
+  }
+}
