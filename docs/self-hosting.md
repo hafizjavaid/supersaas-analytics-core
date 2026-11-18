@@ -12,16 +12,71 @@ calls our servers.
 - Optionally, a way to send email: a [Resend](https://resend.com) API key or any SMTP server. Without one, the copy
   still works, with fewer features (see [Email](#email)).
 
+## Run it on your machine first
+
+You don't need Cloudflare or any account for this. It is the quickest way to see the copy, and the place to try
+changes before you deploy them.
+
+1. Get the code and install:
+
+   ```sh
+   git clone https://github.com/hafizjavaid/supersaas-analytics-core.git
+   cd supersaas-analytics-core
+   corepack enable
+   pnpm install
+   ```
+
+   Expected: `pnpm install` ends with "Types generated in .nuxt".
+
+2. Start the dev server:
+
+   ```sh
+   pnpm dev
+   ```
+
+   Expected: the app at <http://localhost:3001>. The database is a SQLite file, `.data/db/sqlite.db`, created with
+   every table on the first start. No `.env` is needed. To try an optional feature, `cp .env.example .env`, fill in
+   its variables (see [Environment variables](#environment-variables)) and restart `pnpm dev`.
+
+3. Open <http://localhost:3001> and sign up. No email leaves your machine in development: the verification link is
+   printed in the `pnpm dev` terminal, and listed at <http://localhost:3001/api/dev/emails>. Open it, then create your
+   first Organization and a Site.
+
+4. Fill the Site with demo traffic, while `pnpm dev` runs:
+
+   ```sh
+   pnpm db:seed            # the first Site, 30 days
+   pnpm db:seed <siteId> 90
+   ```
+
+5. Optional: run the checks a contributor runs.
+
+   ```sh
+   pnpm lint
+   pnpm typecheck
+   pnpm test
+   ```
+
+   `pnpm test` starts its own server on port 3100 with a separate database, and stand-in APIs on ports 3101 to 3104.
+   Stop anything else on those ports first.
+
+To start over, stop `pnpm dev` and delete `.data/db`. The next sign-up is the Super-admin again.
+
 ## Deploy to Cloudflare
 
 ### 1. Get the code
 
+Use the clone from above, or make one now:
+
 ```sh
-git clone <repository URL>
-cd supersaas-analytics
+git clone https://github.com/hafizjavaid/supersaas-analytics-core.git
+cd supersaas-analytics-core
 pnpm install
 npx wrangler login
 ```
+
+To keep your own changes, fork the repository on GitHub first and clone the fork; you can still take our updates
+(see [Updating](#updating)).
 
 ### 2. Create the resources
 
@@ -161,7 +216,12 @@ pnpm install
 pnpm run deploy
 ```
 
-Migrations are applied before the new Worker goes live. Read the release notes before a large update.
+On a fork, add our repository once with `git remote add upstream https://github.com/hafizjavaid/supersaas-analytics-core.git`,
+then update with `git pull upstream main` instead of `git pull`.
+
+Migrations are applied before the new Worker goes live. Read the release notes before a large update. To try an update
+first, run `pnpm dev` after `pnpm install`: your local database gets the new migrations, and you can check your Sites'
+pages before deploying.
 
 ## The licence
 
@@ -183,3 +243,6 @@ Apache 2.0. A self-hosted copy shows a small "Powered by Supersaas Analytics" li
 
 - [Installation](installation.md): add the tracking snippet to your website.
 - [Proxying through your domain](proxying.md): serve the snippet from your website's own domain.
+- [API keys](api-keys.md), the [API](api.md), [MCP](mcp.md) and the [CLI](cli.md): read your reports from scripts,
+  AI agents and the terminal.
+- [Badges](badges.md): show a Site's verified Visitors on your own pages.

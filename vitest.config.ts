@@ -12,7 +12,7 @@ export default defineConfig({
 				resolve: { alias },
 				test: {
 					name: "unit",
-					include: ["test/unit/**/*.test.ts"],
+					include: ["test/unit/**/*.test.ts", "cli/test/**/*.test.ts"],
 					environment: "node",
 				},
 			},

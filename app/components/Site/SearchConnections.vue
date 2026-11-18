@@ -11,7 +11,11 @@ const { data, refresh } = await useFetch<SearchConnections>(() => `/api/sites/${
 	default: () => ({ google: null, bing: null, googleAvailable: false }),
 });
 
-const authorizeUrl = computed(() => `/api/sites/${props.siteId}/search-connections/google/authorize`);
+const { active: inDemo, signUp } = useDemo();
+// A link, not a fetch, so the demo's sign-up has to replace it before the browser leaves for a raw 404.
+const connectGoogle = computed(() => (inDemo.value
+	? { onClick: signUp }
+	: { to: `/api/sites/${props.siteId}/search-connections/google/authorize`, external: true }));
 
 const bingApiKey = ref("");
 const connectingBing = ref(false);
@@ -109,8 +113,7 @@ onMounted(() => {
 								icon="i-logos-google-icon"
 								color="neutral"
 								variant="outline"
-								:to="authorizeUrl"
-								external
+								v-bind="connectGoogle"
 							/>
 						</div>
 						<p
@@ -134,8 +137,7 @@ onMounted(() => {
 							size="sm"
 							color="neutral"
 							variant="outline"
-							:to="authorizeUrl"
-							external
+							v-bind="connectGoogle"
 						/>
 					</template>
 				</SiteSearchEngineConnection>

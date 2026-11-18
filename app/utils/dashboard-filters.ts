@@ -3,6 +3,7 @@ import { parsePlace, serializeFilter } from "#layers/core/shared/utils/filters";
 import { CHANNEL_LABELS, findAiAssistant, isChannel } from "#layers/core/shared/utils/channels";
 import { countryName } from "#layers/core/shared/utils/countries";
 import { describeGoal, parseGoalFilterValue } from "#layers/core/shared/utils/goals";
+import type { ReportQuery } from "./dashboard-range";
 
 export const FILTER_LABELS: Record<FilterDimension, string> = {
 	page: "Page",

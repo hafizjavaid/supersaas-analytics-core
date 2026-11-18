@@ -7,6 +7,10 @@ const { basePath, can } = useOrganization();
 const { data: overview, refresh } = await useAllSitesOverview();
 const canCreate = computed(() => can({ site: ["create"] }));
 const addSiteOpen = ref(false);
+const { attempt } = useDemo();
+const openAddSite = () => attempt(() => {
+	addSiteOpen.value = true;
+});
 const totalCells = computed(() => overviewTotalCells(overview.value.totals));
 const TOTAL_GRID_COLUMNS: Record<number, string> = { 4: "sm:grid-cols-4", 5: "sm:grid-cols-3 lg:grid-cols-5" };
 
@@ -28,7 +32,7 @@ async function onSiteCreated(site: Site) {
 			<UButton
 				label="Add a website"
 				icon="i-material-symbols-add-rounded"
-				@click="addSiteOpen = true"
+				@click="openAddSite"
 			/>
 		</template>
 
@@ -37,7 +41,7 @@ async function onSiteCreated(site: Site) {
 			icon="i-material-symbols-bar-chart-rounded"
 			title="No websites yet"
 			:description="canCreate ? 'Add a website to start tracking its visitors.' : 'An Owner or Admin of this Organization can add one.'"
-			:actions="canCreate ? [{ label: 'Add a website', icon: 'i-material-symbols-add-rounded', onClick: () => { addSiteOpen = true; } }] : []"
+			:actions="canCreate ? [{ label: 'Add a website', icon: 'i-material-symbols-add-rounded', onClick: openAddSite }] : []"
 			class="m-auto max-w-sm"
 		/>
 

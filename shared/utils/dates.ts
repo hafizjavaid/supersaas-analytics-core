@@ -97,7 +97,7 @@ export function dateRangeList(fromDate: string, toDate: string): string[] {
 	return dates;
 }
 
-function isDate(value: unknown): value is string {
+export function isDate(value: unknown): value is string {
 	return typeof value === "string" && DATE_PATTERN.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`));
 }
 

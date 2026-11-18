@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { adminNavigation, reportQueryOf, shareNavigation, sidebarNavigation, siteSettingsSections, organizationSettingsSections } from "#layers/core/app/utils/navigation";
+import { adminNavigation, reportQueryOf, shareNavigation, sidebarNavigation, siteSettingsSections, organizationSettingsSections, withReportQuery } from "#layers/core/app/utils/navigation";
 
 describe("sidebarNavigation", () => {
 	it("shows the built all-sites items in order", () => {
@@ -100,13 +100,14 @@ describe("settings sections", () => {
 			["General", "/app/acme/settings"],
 			["Members", "/app/acme/settings/members"],
 			["Digests", "/app/acme/settings/digests"],
+			["API keys", "/app/acme/settings/api-keys"],
 			["Danger zone", "/app/acme/settings/danger"],
 		]);
 	});
 
 	it("hides Digests on a server that sends no email", () => {
 		const sections = organizationSettingsSections("/app/acme/settings", { email: false });
-		expect(sections.map(section => section.label)).toEqual(["General", "Members", "Danger zone"]);
+		expect(sections.map(section => section.label)).toEqual(["General", "Members", "API keys", "Danger zone"]);
 	});
 });
 
@@ -118,5 +119,29 @@ describe("reportQueryOf", () => {
 			to: "2026-01-31",
 			f: ["country:CH"],
 		});
+	});
+});
+
+describe("withReportQuery", () => {
+	const links = [
+		{ label: "Analytics", icon: "", to: "/s", keepsReportQuery: true },
+		{ label: "Pages", icon: "", to: "/s/pages", keepsReportQuery: true },
+		{ label: "Live", icon: "", to: "/s/live" },
+	];
+
+	it("carries the Range and Filters to report pages only", () => {
+		expect(withReportQuery(links, { range: "7d", f: "country:CH", q: "x" }).map(link => link.to)).toEqual([
+			{ path: "/s", query: { range: "7d", f: "country:CH" } },
+			{ path: "/s/pages", query: { range: "7d", f: "country:CH" } },
+			"/s/live",
+		]);
+	});
+
+	it("leaves the Filters off a page that cannot answer them", () => {
+		expect(withReportQuery(links, { range: "7d", f: "country:CH" }, path => path === "/s").map(link => link.to)).toEqual([
+			{ path: "/s", query: { range: "7d", f: "country:CH" } },
+			{ path: "/s/pages", query: { range: "7d" } },
+			"/s/live",
+		]);
 	});
 });

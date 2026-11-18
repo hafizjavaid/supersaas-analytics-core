@@ -25,6 +25,9 @@ export const FILTER_DIMENSIONS = [
 
 export type FilterDimension = typeof FILTER_DIMENSIONS[number];
 
+// Quoted in API v1's, MCP's and Ask AI's descriptions, so agents copy them: each must parse.
+export const FILTER_EXAMPLES = ["country:US", "channel:search"] as const;
+
 export interface Filter {
 	dimension: FilterDimension;
 	value: string;

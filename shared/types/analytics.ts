@@ -99,6 +99,9 @@ export interface Journeys {
 	events: { path: string; rows: JourneyEvent[] } | null;
 }
 
+// The rows a ranked card shows, and so the most a top list or the Events list returns.
+export const TOP_LIST_ROWS = 10;
+
 export const PAGE_DIMENSIONS = ["top", "entered", "exited", "outbound"] as const;
 export const SOURCE_DIMENSIONS = ["channel", "referrer", "ai", "campaign", "medium", "term", "content"] as const;
 export const DEVICE_DIMENSIONS = ["browser", "os", "device"] as const;
@@ -426,6 +429,8 @@ export interface ShareLink {
 	hasPassword: boolean;
 	// Set when the link shares one Outbound link's stats instead of the dashboard.
 	outboundUrl: string | null;
+	badge: boolean;
+	badgeClicks: number;
 	createdAt: number;
 }
 

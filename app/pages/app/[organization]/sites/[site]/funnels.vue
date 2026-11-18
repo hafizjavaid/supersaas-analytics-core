@@ -11,10 +11,13 @@ const { data: funnels, status, refresh } = await useFunnels(api);
 const canManage = computed(() => can({ funnel: ["create"] }));
 const builderOpen = ref(false);
 const editing = ref<Funnel | null>(null);
+const { attempt } = useDemo();
 
 function openBuilder(funnel: Funnel | null) {
-	editing.value = funnel;
-	builderOpen.value = true;
+	attempt(() => {
+		editing.value = funnel;
+		builderOpen.value = true;
+	});
 }
 </script>
 

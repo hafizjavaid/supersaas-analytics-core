@@ -1,0 +1,40 @@
+{
+  "name": "supersaas-analytics",
+  "version": "0.1.0",
+  "description": "Read your Supersaas Analytics reports from the terminal, scripts and AI agents",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "supersaas": "dist/bin.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "analytics",
+    "cli",
+    "supersaas",
+    "web-analytics"
+  ],
+  "homepage": "https://supersaasanalytics.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hafizjavaid/supersaas-analytics-core.git",
+    "directory": "cli"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "prepack": "tsc -p tsconfig.build.json"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "typescript": "^6.0.3"
+  }
+}

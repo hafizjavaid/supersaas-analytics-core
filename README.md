@@ -91,18 +91,18 @@ Environment variables are listed in `.env.example`. None are needed locally.
 
 ## Guides
 
-- [Local development](docs/local-development.md)
-- [Testing](docs/testing.md) and [Manual testing on your machine](docs/manual-testing-local.md)
-- [Production deployment](docs/production-deployment.md) and
-  [Verifying production](docs/manual-testing-production.md)
-- [Revenue attribution](docs/revenue-attribution.md), [Search Console](docs/search-console.md) and
-  [Self-hosting](docs/self-hosting.md)
+- [Self-hosting on Cloudflare](docs/self-hosting.md): run it on your machine, then deploy your own copy and keep it
+  updated.
+- [Installation](docs/installation.md): add the tracking snippet to a website.
+- [Proxying through your domain](docs/proxying.md): serve the snippet from your website's own domain.
 
-For running your own copy: [Self-hosting on Cloudflare](docs/self-hosting.md), [Installation](docs/installation.md)
-of the tracking snippet, and [Proxying through your domain](docs/proxying.md). The full documentation is at
-[supersaasanalytics.com/docs](https://supersaasanalytics.com/docs).
+The full documentation is at [supersaasanalytics.com/docs](https://supersaasanalytics.com/docs).
 
-The domain language is in `CONTEXT.md` and the decisions are in `docs/adr/`.
+## Contributing
+
+Pull requests are welcome. Run `pnpm lint`, `pnpm typecheck` and `pnpm test` first. This repository is published from
+our main repository, so a merged change arrives in the next release rather than as a merge here; you are credited as
+its author.
 
 ## Licence
 

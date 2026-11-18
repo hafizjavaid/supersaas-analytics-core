@@ -5,7 +5,7 @@ import { getDefaultAttributes } from "eslint-plugin-better-tailwindcss/api/defau
 
 export default withNuxt(
 	{
-		ignores: ["public/sd.js"],
+		ignores: ["public/sd.js", "cli/dist"],
 	},
 	betterTailwindcss.configs["correctness-error"],
 	{

@@ -119,7 +119,7 @@ export async function computeTimeseries(site: Site, range: ResolvedRange, filter
 	}));
 }
 
-async function computeVisitPoints(site: Site, range: ResolvedRange, filters: Filter[], now: number): Promise<TimeseriesPoint[]> {
+export async function computeVisitPoints(site: Site, range: ResolvedRange, filters: Filter[], now: number): Promise<TimeseriesPoint[]> {
 	const hourly = planHourlyWindow(range, site.timezone, now);
 	if (hourly) {
 		return computeHourlyPoints(site.id, hourly, filters);

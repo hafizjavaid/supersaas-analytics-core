@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseFilter, parseFilters, parsePlace, serializeFilter, withFilter, withoutFilter } from "#layers/core/shared/utils/filters";
+import { FILTER_EXAMPLES, parseFilter, parseFilters, parsePlace, serializeFilter, withFilter, withoutFilter } from "#layers/core/shared/utils/filters";
 
 describe("parseFilter", () => {
 	it("reads dimension:value", () => {
@@ -84,5 +84,11 @@ describe("filter lists", () => {
 	it("splits a place into country and name", () => {
 		expect(parsePlace("US-San Francisco")).toEqual({ country: "US", name: "San Francisco" });
 		expect(parsePlace("Bern")).toBeNull();
+	});
+});
+
+describe("FILTER_EXAMPLES", () => {
+	it.each(FILTER_EXAMPLES)("offers %s, which parses", (example) => {
+		expect(parseFilter(example)).not.toBeNull();
 	});
 });

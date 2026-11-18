@@ -14,7 +14,7 @@ const items = computed(() => (data.value?.rows ?? []).map(row => ({
 	key: row.value,
 	label: view.value === "device" ? `${row.value.charAt(0).toUpperCase()}${row.value.slice(1)}` : row.value,
 	value: row.visits,
-	filters: [{ dimension: view.value, value: row.value }],
+	filters: [deviceRowFilter(row, view.value)],
 })));
 </script>
 

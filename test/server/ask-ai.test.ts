@@ -35,8 +35,26 @@ async function askAndRead(text: string, siteId?: string) {
 	return answerOf(await ask(owner, organization, conversation.id, text));
 }
 
+interface ModelRequestBlock {
+	type: string;
+	text?: string;
+	cache_control?: { type: string };
+}
+
+interface ModelRequest {
+	model: string;
+	tools: (ModelRequestBlock & { name: string })[];
+	system: ModelRequestBlock[];
+	messages: { role: string; content: ModelRequestBlock[] }[];
+}
+
 function lastModelRequest() {
-	return fetch(`${FAKE_ANTHROPIC_URL}/last-request`).then(response => response.json()) as Promise<{ model: string; tools: { name: string }[] }>;
+	return fetch(`${FAKE_ANTHROPIC_URL}/last-request`).then(response => response.json()) as Promise<ModelRequest>;
+}
+
+function cacheBreakpointsOf(request: ModelRequest) {
+	const blocks = [...request.tools, ...request.system, ...request.messages.flatMap(message => message.content)];
+	return blocks.filter(block => block.cache_control).length;
 }
 
 let owner: TestUser;
@@ -98,6 +116,34 @@ describe("asking a question", () => {
 		expect((await owner.$fetch<AiConversationList>(`${aiPath(organization)}/conversations?site=${site.id}`)).conversations.map(entry => entry.id)).toEqual([conversation.id]);
 		expect((await owner.$fetch<AiConversationList>(`${aiPath(organization)}/conversations`)).conversations.map(entry => entry.id)).not.toContain(conversation.id);
 		expect((await owner.fetch(`${aiPath(organization)}/conversations`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ siteId: otherSite.id }) })).status).toBe(404);
+	});
+});
+
+describe("prompt caching", () => {
+	it("marks the system prompt and the question as cache breakpoints", async () => {
+		await askAndRead("How many visitors came today?");
+		const request = await lastModelRequest();
+		expect(request.system.at(-1)!.cache_control).toEqual({ type: "ephemeral" });
+		expect(request.messages.at(-1)!.content.at(-1)!.cache_control).toEqual({ type: "ephemeral" });
+		expect(cacheBreakpointsOf(request)).toBe(2);
+	});
+
+	it("moves the history breakpoint to the latest tool result at each step", async () => {
+		await askAndRead("call listSites");
+		const request = await lastModelRequest();
+		const latest = request.messages.at(-1)!.content.at(-1)!;
+		expect(latest.type).toBe("tool_result");
+		expect(latest.cache_control).toEqual({ type: "ephemeral" });
+		expect(cacheBreakpointsOf(request)).toBe(2);
+	});
+
+	it("sends the same system prompt for every question of a conversation", async () => {
+		const conversation = await startConversation(owner, organization, site.id);
+		await answerOf(await ask(owner, organization, conversation.id, "First question"));
+		const first = await lastModelRequest();
+		await answerOf(await ask(owner, organization, conversation.id, "Second question"));
+		const second = await lastModelRequest();
+		expect(second.system).toEqual(first.system);
 	});
 });
 

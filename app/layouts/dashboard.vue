@@ -1,14 +1,15 @@
 <script setup lang="ts">
 const route = useRoute();
 const { ai } = useDeployment();
-const { organizationNavigation, adminNavigation: adminLinks } = useEdition();
+const { organizationNavigation, adminNavigation: adminLinks, demo } = useEdition();
 const { appName } = useRuntimeConfig().public;
 const organizationSlug = computed(() => String(route.params.organization ?? ""));
 const siteId = computed(() => route.params.site ? String(route.params.site) : undefined);
 const homePath = computed(() => (organizationSlug.value ? `/app/${organizationSlug.value}` : "/app"));
 const links = computed(() => {
 	if (organizationSlug.value) {
-		return withReportQuery(sidebarNavigation({ organizationSlug: organizationSlug.value, siteId: siteId.value, ai: ai.value, organizationLinks: organizationNavigation }), route.query);
+		const navigation = sidebarNavigation({ organizationSlug: organizationSlug.value, siteId: siteId.value, ai: ai.value, organizationLinks: organizationNavigation });
+		return withReportQuery(navigation.filter(link => demo.offers(link.to)), route.query, path => demo.answersFilters(path, parseFilters(route.query.f)));
 	}
 	return adminNavigation(adminLinks);
 });

@@ -2,8 +2,9 @@
 import type { Confirmation } from "#layers/core/app/components/App/ConfirmModal.vue";
 import type { ShareLink } from "#layers/core/shared/types/analytics";
 import { MIN_SHARE_PASSWORD_LENGTH } from "#layers/core/shared/schemas/share-links";
+import { canHaveBadge } from "#layers/core/shared/utils/badges";
 
-const props = defineProps<{ siteId: string }>();
+const props = defineProps<{ siteId: string; domain: string }>();
 
 const notify = useNotify();
 const origin = useRequestURL().origin;
@@ -46,10 +47,28 @@ async function create() {
 	}
 }
 
+const switchingBadge = ref<string | null>(null);
+
+async function setBadge(link: ShareLink, badge: boolean) {
+	switchingBadge.value = link.id;
+	try {
+		await $fetch(`/api/sites/${props.siteId}/share-links/${link.id}`, { method: "PATCH", body: { badge } });
+		await refresh();
+	}
+	catch (caught) {
+		notify.error(badge ? "Could not turn the Badge on" : "Could not turn the Badge off", caught);
+	}
+	finally {
+		switchingBadge.value = null;
+	}
+}
+
 function revoke(link: ShareLink) {
 	confirmation.value = {
 		title: `Revoke ${link.name}?`,
-		description: "Anyone with this link loses access at once. This cannot be undone.",
+		description: link.badge
+			? "Anyone with this link loses access at once, and its Badge reads \"Badge unavailable\". This cannot be undone."
+			: "Anyone with this link loses access at once. This cannot be undone.",
 		confirmLabel: "Revoke",
 		run: async () => {
 			try {
@@ -76,7 +95,8 @@ function revoke(link: ShareLink) {
 			<p class="text-sm text-muted">
 				Anyone with a Share link sees this Site's dashboard, Pages and Funnels, read-only and without signing in.
 				They never see individual Visitors or settings. Links with a destination share only that Outbound link's
-				clicks; create them from the Links page.
+				clicks; create them from the Links page. A link without a password can show a Badge on your own site,
+				which makes the link public.
 			</p>
 		</template>
 
@@ -143,53 +163,70 @@ function revoke(link: ShareLink) {
 				<li
 					v-for="link in links"
 					:key="link.id"
-					class="flex items-center gap-2 px-3 py-2"
+					class="flex flex-col gap-2 px-3 py-2"
 				>
-					<div class="flex min-w-0 flex-1 flex-col">
-						<span class="flex items-center gap-1.5 text-sm text-highlighted">
-							<span class="truncate">{{ link.name }}</span>
-							<UIcon
-								v-if="link.hasPassword"
-								name="i-material-symbols-lock-outline"
-								class="size-4 shrink-0 text-muted"
-								aria-label="Password protected"
-							/>
-							<UBadge
-								v-if="link.outboundUrl"
-								color="neutral"
-								variant="subtle"
-								size="sm"
-								icon="i-material-symbols-link-rounded"
-								:label="outboundLinkLabel(link.outboundUrl)"
-								:title="`Shares only the clicks on ${link.outboundUrl}`"
-								class="min-w-0 truncate"
-							/>
-						</span>
-						<span class="truncate font-mono text-xs text-muted">{{ shareUrl(link) }}</span>
+					<div class="flex items-center gap-2">
+						<div class="flex min-w-0 flex-1 flex-col">
+							<span class="flex items-center gap-1.5 text-sm text-highlighted">
+								<span class="truncate">{{ link.name }}</span>
+								<UIcon
+									v-if="link.hasPassword"
+									name="i-material-symbols-lock-outline"
+									class="size-4 shrink-0 text-muted"
+									aria-label="Password protected"
+								/>
+								<UBadge
+									v-if="link.outboundUrl"
+									color="neutral"
+									variant="subtle"
+									size="sm"
+									icon="i-material-symbols-link-rounded"
+									:label="outboundLinkLabel(link.outboundUrl)"
+									:title="`Shares only the clicks on ${link.outboundUrl}`"
+									class="min-w-0 truncate"
+								/>
+							</span>
+							<span class="truncate font-mono text-xs text-muted">{{ shareUrl(link) }}</span>
+						</div>
+						<UButton
+							:icon="copied && copiedText === shareUrl(link) ? 'i-material-symbols-check-rounded' : 'i-material-symbols-content-copy-outline-rounded'"
+							color="neutral"
+							variant="ghost"
+							size="sm"
+							:aria-label="`Copy the link for ${link.name}`"
+							@click="copy(shareUrl(link))"
+						/>
+						<UButton
+							icon="i-material-symbols-open-in-new-rounded"
+							color="neutral"
+							variant="ghost"
+							size="sm"
+							:to="shareUrl(link)"
+							target="_blank"
+							:aria-label="`Open ${link.name}`"
+						/>
+						<USwitch
+							v-if="canHaveBadge(link)"
+							:model-value="link.badge"
+							label="Badge"
+							size="sm"
+							:loading="switchingBadge === link.id"
+							:disabled="switchingBadge === link.id"
+							:aria-label="`Badge for ${link.name}`"
+							@update:model-value="setBadge(link, $event)"
+						/>
+						<UButton
+							label="Revoke"
+							color="error"
+							variant="ghost"
+							size="sm"
+							@click="revoke(link)"
+						/>
 					</div>
-					<UButton
-						:icon="copied && copiedText === shareUrl(link) ? 'i-material-symbols-check-rounded' : 'i-material-symbols-content-copy-outline-rounded'"
-						color="neutral"
-						variant="ghost"
-						size="sm"
-						:aria-label="`Copy the link for ${link.name}`"
-						@click="copy(shareUrl(link))"
-					/>
-					<UButton
-						icon="i-material-symbols-open-in-new-rounded"
-						color="neutral"
-						variant="ghost"
-						size="sm"
-						:to="shareUrl(link)"
-						target="_blank"
-						:aria-label="`Open ${link.name}`"
-					/>
-					<UButton
-						label="Revoke"
-						color="error"
-						variant="ghost"
-						size="sm"
-						@click="revoke(link)"
+					<SiteShareLinkBadge
+						v-if="link.badge"
+						:link="link"
+						:domain="domain"
 					/>
 				</li>
 			</ul>

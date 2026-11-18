@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { SourceDimension, TopSourceRow } from "#layers/core/shared/types/analytics";
 import type { Channel } from "#layers/core/shared/utils/channels";
-import type { Filter, FilterDimension } from "#layers/core/shared/utils/filters";
 
 const props = defineProps<{ api: string; query: ReportQuery }>();
 
@@ -28,16 +27,6 @@ const EMPTY_LABELS: Record<SourceDimension, string> = {
 	content: "No UTM content yet",
 };
 
-const FILTER_DIMENSIONS: Record<SourceDimension, FilterDimension> = {
-	channel: "channel",
-	referrer: "referrer",
-	ai: "ai_assistant",
-	campaign: "utm_campaign",
-	medium: "utm_medium",
-	term: "utm_term",
-	content: "utm_content",
-};
-
 const CHANNEL_ICONS: Record<Channel, string> = {
 	direct: "i-material-symbols-explore-outline",
 	search: "i-material-symbols-search",
@@ -55,7 +44,7 @@ const items = computed(() => (data.value?.rows ?? []).map(row => ({
 	value: row.visits,
 	referrerDomain: row.referrerDomain,
 	channelIcon: view.value === "channel" && isChannel(row.key) ? CHANNEL_ICONS[row.key] : undefined,
-	filters: [{ dimension: FILTER_DIMENSIONS[view.value], value: row.key }] as Filter[],
+	filters: [sourceRowFilter(row, view.value)],
 })));
 </script>
 

@@ -8,6 +8,7 @@ const emit = defineEmits<{
 	selectCustom: [from: string, to: string];
 }>();
 
+const { attempt } = useDemo();
 const customOpen = ref(false);
 const customFrom = ref("");
 const customTo = ref("");
@@ -27,7 +28,7 @@ const items = computed<DropdownMenuItem[][]>(() => {
 			icon: "i-material-symbols-date-range-outline-rounded",
 			type: "checkbox" as const,
 			checked: props.range.key === "custom",
-			onSelect: openCustom,
+			onSelect: () => attempt(openCustom),
 		}],
 	];
 });

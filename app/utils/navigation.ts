@@ -93,6 +93,7 @@ export function organizationSettingsSections(settingsPath: string, { email }: { 
 		{ label: "General", icon: "i-material-symbols-tune-rounded", to: settingsPath, exact: true },
 		{ label: "Members", icon: "i-material-symbols-group-outline-rounded", to: `${settingsPath}/members` },
 		...(email ? [{ label: "Digests", icon: "i-material-symbols-mail-outline-rounded", to: `${settingsPath}/digests` }] : []),
+		{ label: "API keys", icon: "i-material-symbols-key-outline-rounded", to: `${settingsPath}/api-keys` },
 		{ label: "Danger zone", icon: "i-material-symbols-warning-outline-rounded", to: `${settingsPath}/danger` },
 	];
 }
@@ -103,6 +104,14 @@ export function reportQueryOf(query: LocationQuery): LocationQuery {
 	return Object.fromEntries(Object.entries(query).filter(([key]) => REPORT_QUERY_KEYS.includes(key)));
 }
 
-export function withReportQuery(links: NavigationLink[], query: LocationQuery) {
-	return links.map(({ keepsReportQuery, ...link }) => (keepsReportQuery ? { ...link, to: { path: link.to, query: reportQueryOf(query) } } : link));
+// `answersFilters` is false for a page that cannot report under the current Filters (Hosted's live demo).
+export function withReportQuery(links: NavigationLink[], query: LocationQuery, answersFilters: (path: string) => boolean = () => true) {
+	const reportQuery = reportQueryOf(query);
+	const { f: _f, ...withoutFilters } = reportQuery;
+	return links.map(({ keepsReportQuery, ...link }) => {
+		if (!keepsReportQuery) {
+			return link;
+		}
+		return { ...link, to: { path: link.to, query: answersFilters(link.to) ? reportQuery : withoutFilters } };
+	});
 }

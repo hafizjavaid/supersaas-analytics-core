@@ -9,6 +9,7 @@ const { can } = useOrganization();
 	<SiteShareLinks
 		v-if="can({ shareLink: ['create'] })"
 		:site-id="site.id"
+		:domain="site.domain"
 	/>
 	<UCard v-else>
 		<p class="text-sm text-muted">

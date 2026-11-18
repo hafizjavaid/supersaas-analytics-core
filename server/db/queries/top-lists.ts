@@ -14,6 +14,7 @@ import type {
 	TopPageRow,
 	TopSourceRow,
 } from "#layers/core/shared/types/analytics";
+import { TOP_LIST_ROWS } from "#layers/core/shared/types/analytics";
 import type { ResolvedRange } from "#layers/core/shared/utils/dates";
 import { planRangeQuery } from "#layers/core/shared/utils/dates";
 import type { Filter } from "#layers/core/shared/utils/filters";
@@ -37,15 +38,14 @@ const {
 	visits,
 } = tables;
 
-const LIMIT = 10;
 const DIRECT = "(direct)";
 
-// `total` covers every row, not only the top ten, so a row's share of it is its share of the whole Range.
+// `total` covers every row, not only the top rows, so a row's share of it is its share of the whole Range.
 function rankRows<TRow>(rows: TRow[], value: (row: TRow) => number): TopListResult<TRow> {
 	const populatedRows = rows.filter(row => value(row) > 0);
 	return {
 		total: populatedRows.reduce((sum, row) => sum + value(row), 0),
-		rows: populatedRows.sort((a, b) => value(b) - value(a)).slice(0, LIMIT),
+		rows: populatedRows.sort((a, b) => value(b) - value(a)).slice(0, TOP_LIST_ROWS),
 	};
 }
 
@@ -300,5 +300,5 @@ export async function computeTopEvents(site: Site, range: ResolvedRange, filters
 	}
 	return Array.from(merged.values())
 		.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name) || (a.path ?? "").localeCompare(b.path ?? ""))
-		.slice(0, LIMIT);
+		.slice(0, TOP_LIST_ROWS);
 }

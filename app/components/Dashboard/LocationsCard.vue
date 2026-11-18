@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { LiveVisitors, LocationDimension, TopLocationRow } from "#layers/core/shared/types/analytics";
-import type { Filter } from "#layers/core/shared/utils/filters";
 
 const props = defineProps<{ api: string; query: ReportQuery; live: LiveVisitors | null }>();
 
@@ -30,23 +29,13 @@ function locationLabel(row: TopLocationRow, dimension: LocationDimension) {
 	return country;
 }
 
-function locationFilter(row: TopLocationRow, dimension: LocationDimension): Filter {
-	if (dimension === "city") {
-		return { dimension, value: `${row.country}-${row.city}` };
-	}
-	if (dimension === "region") {
-		return { dimension, value: `${row.country}-${row.region}` };
-	}
-	return { dimension, value: row.country };
-}
-
 const { view, data, animate, changeView } = useRankedList<TopLocationRow, LocationDimension>("locations", props, "country");
 const items = computed(() => (data.value?.rows ?? []).map(row => ({
 	key: `${row.country}-${row.region}-${row.city}`,
 	label: locationLabel(row, view.value),
 	value: row.visits,
 	country: row.country,
-	filters: [locationFilter(row, view.value)],
+	filters: [locationRowFilter(row, view.value)],
 })));
 
 const showGlobe = ref(false);

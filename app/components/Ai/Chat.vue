@@ -10,6 +10,7 @@ const props = defineProps<{ siteId?: string; subject: string }>();
 const { organization } = useOrganization();
 const { user } = useAuth();
 const notify = useNotify();
+const { active: inDemo, signUp } = useDemo();
 const apiRoot = computed(() => `/api/organizations/${organization.value.id}/ai`);
 
 const { data: list, refresh: refreshList } = useFetch<AiConversationList>(() => `${apiRoot.value}/conversations`, {
@@ -40,7 +41,7 @@ const outOfQuestions = computed(() => list.value.allowance.left === 0);
 const conversationItems = computed(() => list.value.conversations.map((conversation: AiConversation) => ({ label: conversation.title, value: conversation.id })));
 const allowanceLabel = computed(() => {
 	const { left, limit } = list.value.allowance;
-	return limit === null ? "" : `${left} of ${limit} questions left this month`;
+	return limit === null || inDemo.value ? "" : `${left} of ${limit} questions left this month`;
 });
 const starters = computed(() => starterQuestions(props.siteId ? "site" : "organization"));
 
@@ -184,10 +185,27 @@ async function deleteConversation() {
 						Ask about {{ subject }}
 					</h2>
 					<p class="text-sm text-muted">
-						Answers come from your own analytics, with charts where they help.
+						{{ inDemo ? "Open a conversation recorded on the demo's sample data." : "Answers come from your own analytics, with charts where they help." }}
 					</p>
 				</div>
-				<div class="flex flex-wrap justify-center gap-2">
+				<div
+					v-if="inDemo"
+					class="flex flex-wrap justify-center gap-2"
+				>
+					<UButton
+						v-for="conversation in list.conversations"
+						:key="conversation.id"
+						:label="conversation.title"
+						size="sm"
+						color="neutral"
+						variant="outline"
+						@click="openConversation(conversation.id)"
+					/>
+				</div>
+				<div
+					v-else
+					class="flex flex-wrap justify-center gap-2"
+				>
 					<UButton
 						v-for="starter in starters"
 						:key="starter"
@@ -216,8 +234,21 @@ async function deleteConversation() {
 			</UChatMessages>
 		</div>
 
+		<div
+			v-if="inDemo"
+			class="sticky bottom-0 flex flex-col items-center gap-2 rounded-lg border border-default bg-default p-4 text-center"
+		>
+			<p class="text-sm text-muted">
+				These answers come from the demo's sample data.
+			</p>
+			<UButton
+				label="Start a free trial to ask your own questions"
+				icon="i-material-symbols-auto-awesome-outline-rounded"
+				@click="signUp()"
+			/>
+		</div>
 		<UAlert
-			v-if="outOfQuestions"
+			v-else-if="outOfQuestions"
 			color="warning"
 			variant="subtle"
 			icon="i-material-symbols-hourglass-empty-rounded"

@@ -1,6 +1,6 @@
 import type { H3Event } from "h3";
 import { constantTimeEqual, verifyPassword } from "better-auth/crypto";
-import { getShareLinkByToken } from "#layers/core/server/db/queries/share-links";
+import { countBadgeClick, getShareLinkByToken } from "#layers/core/server/db/queries/share-links";
 import { getSiteById } from "#layers/core/server/db/queries/sites";
 import { hmacHex } from "#layers/core/server/utils/visitor-id";
 
@@ -39,6 +39,9 @@ export async function readSharedDashboard(event: H3Event): Promise<SharedDashboa
 		return { locked: true };
 	}
 	const { id, name, domain, timezone } = await requireSiteOfLink(link);
+	if (link.badge && getQuery(event).ref === "badge") {
+		event.waitUntil(countBadgeClick(link.id).catch(error => console.error("[badge]", error)));
+	}
 	return { locked: false, site: { id, name, domain, timezone }, outboundUrl: link.outboundUrl };
 }
 

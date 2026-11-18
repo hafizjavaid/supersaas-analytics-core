@@ -5,14 +5,11 @@ import { computeGoalReport } from "#layers/core/server/db/queries/goals";
 import { computeSummary, computeTimeseries } from "#layers/core/server/db/queries/overview";
 import { computeConversions, listOrganizationRevenueConnections } from "#layers/core/server/db/queries/revenue";
 import { getSiteById, listOrganizationSites } from "#layers/core/server/db/queries/sites";
-import { computeTopDevices, computeTopEvents, computeTopLocations, computeTopPages, computeTopSources } from "#layers/core/server/db/queries/top-lists";
-import type { Site } from "#layers/core/shared/types/analytics";
-import type { TopListDimension, TopListOutput } from "#layers/core/shared/utils/ai";
-import { TOP_LIST_DIMENSIONS } from "#layers/core/shared/utils/ai";
+import { readTopList } from "#layers/core/server/utils/top-list";
+import type { TopListOutput } from "#layers/core/shared/utils/ai";
+import { REPORT_DESCRIPTIONS, TOP_LIST_DIMENSIONS } from "#layers/core/shared/utils/ai";
 import { RANGE_KEYS, resolveRange } from "#layers/core/shared/utils/dates";
-import type { ResolvedRange } from "#layers/core/shared/utils/dates";
-import { FILTER_DIMENSIONS, parseFilters } from "#layers/core/shared/utils/filters";
-import type { Filter } from "#layers/core/shared/utils/filters";
+import { FILTER_DIMENSIONS, FILTER_EXAMPLES, parseFilters } from "#layers/core/shared/utils/filters";
 
 const ROW_LIMIT = 10;
 
@@ -21,68 +18,8 @@ const rangeSchema = z.object({
 	range: z.enum(RANGE_KEYS).default("30d").describe("today, yesterday, 24h, 7d, 30d, 90d, 6m, 12m, or custom with from and to"),
 	from: z.string().optional().describe("YYYY-MM-DD in the Site's timezone, for a custom range"),
 	to: z.string().optional().describe("YYYY-MM-DD in the Site's timezone, for a custom range"),
-	filters: z.array(z.string()).default([]).describe(`Filters as "dimension:value", such as "country:US" or "channel:Search". Dimensions: ${FILTER_DIMENSIONS.join(", ")}`),
+	filters: z.array(z.string()).default([]).describe(`Filters as "dimension:value", such as ${FILTER_EXAMPLES.map(example => `"${example}"`).join(" or ")}. Dimensions: ${FILTER_DIMENSIONS.join(", ")}`),
 });
-
-type TopListReader = (site: Site, range: ResolvedRange, filters: Filter[]) => Promise<Pick<TopListOutput, "metric" | "rows" | "total">>;
-
-function pages(dimension: "top" | "entered" | "exited" | "outbound", metric: TopListOutput["metric"]): TopListReader {
-	return async (site, range, filters) => {
-		const result = await computeTopPages(site, range, filters, dimension);
-		return { metric, rows: result.rows.map(row => ({ label: row.path, value: row.count })), total: result.total };
-	};
-}
-
-function sources(dimension: Parameters<typeof computeTopSources>[3]): TopListReader {
-	return async (site, range, filters) => {
-		const result = await computeTopSources(site, range, filters, dimension);
-		return { metric: "visits", rows: result.rows.map(row => ({ label: row.label, value: row.visits })), total: result.total };
-	};
-}
-
-function devices(dimension: Parameters<typeof computeTopDevices>[3]): TopListReader {
-	return async (site, range, filters) => {
-		const result = await computeTopDevices(site, range, filters, dimension);
-		return { metric: "visits", rows: result.rows.map(row => ({ label: row.value, value: row.visits })), total: result.total };
-	};
-}
-
-function locations(dimension: Parameters<typeof computeTopLocations>[3]): TopListReader {
-	const parts = { country: 1, region: 2, city: 3 }[dimension];
-	return async (site, range, filters) => {
-		const result = await computeTopLocations(site, range, filters, dimension);
-		const label = (row: (typeof result.rows)[number]) => [row.country, row.region, row.city].slice(0, parts).filter(Boolean).reverse().join(", ");
-		return { metric: "visits", rows: result.rows.map(row => ({ label: label(row), value: row.visits })), total: result.total };
-	};
-}
-
-const TOP_LISTS: Record<TopListDimension, TopListReader> = {
-	page: pages("top", "pageviews"),
-	entry_page: pages("entered", "visits"),
-	exit_page: pages("exited", "visits"),
-	outbound_link: pages("outbound", "clicks"),
-	channel: sources("channel"),
-	referrer: sources("referrer"),
-	ai_assistant: sources("ai"),
-	utm_campaign: sources("campaign"),
-	utm_medium: sources("medium"),
-	utm_term: sources("term"),
-	utm_content: sources("content"),
-	browser: devices("browser"),
-	os: devices("os"),
-	device: devices("device"),
-	country: locations("country"),
-	region: locations("region"),
-	city: locations("city"),
-	event: async (site, range, filters) => {
-		const rows = await computeTopEvents(site, range, filters);
-		return {
-			metric: "events",
-			rows: rows.map(row => ({ label: row.path ? `${row.name} on ${row.path}` : row.name, value: row.count })),
-			total: rows.reduce((sum, row) => sum + row.count, 0),
-		};
-	},
-};
 
 class AiToolRefusal extends Error {}
 
@@ -119,12 +56,12 @@ export async function analyticsTools(organizationId: string) {
 
 	const tools = {
 		listSites: tool({
-			description: "List the Organization's Sites with their ids, domains and timezones.",
+			description: REPORT_DESCRIPTIONS.listSites,
 			inputSchema: z.object({}),
 			execute: async () => ({ sites: sites.map(site => ({ id: site.id, name: site.name, domain: site.domain, timezone: site.timezone })) }),
 		}),
 		summary: tool({
-			description: "Visitors, Visits, Pageviews, bounce rate and visit duration (with conversion rate and Revenue once set up) over a Range, and the same for the previous period.",
+			description: REPORT_DESCRIPTIONS.summary,
 			inputSchema: rangeSchema,
 			execute: refusing(async (input) => {
 				const { site, range, filters } = await read(input);
@@ -132,7 +69,7 @@ export async function analyticsTools(organizationId: string) {
 			}),
 		}),
 		timeseries: tool({
-			description: "Visitors and Pageviews over a Range, per hour for a single day and per day otherwise. The answer shows it as a chart.",
+			description: `${REPORT_DESCRIPTIONS.timeseries} The answer shows it as a chart.`,
 			inputSchema: rangeSchema,
 			execute: refusing(async (input) => {
 				const { site, range, filters } = await read(input);
@@ -141,11 +78,11 @@ export async function analyticsTools(organizationId: string) {
 			}),
 		}),
 		topList: tool({
-			description: "The top values of one dimension over a Range, such as pages, referrers, channels, countries or browsers. The answer shows it as a ranked list.",
+			description: `${REPORT_DESCRIPTIONS.topList} The answer shows it as a ranked list.`,
 			inputSchema: rangeSchema.extend({ dimension: z.enum(TOP_LIST_DIMENSIONS) }),
 			execute: refusing(async (input): Promise<TopListOutput & { site: string }> => {
 				const { site, range, filters } = await read(input);
-				const result = await TOP_LISTS[input.dimension](site, range, filters);
+				const result = await readTopList(site, range, filters, input.dimension);
 				return { site: site.name, range, dimension: input.dimension, ...result, rows: result.rows.slice(0, ROW_LIMIT) };
 			}),
 		}),
@@ -165,7 +102,7 @@ export async function analyticsTools(organizationId: string) {
 			}),
 		}),
 		goals: tool({
-			description: "Each Goal's conversions, unique Visitors and conversion rate over a Range.",
+			description: REPORT_DESCRIPTIONS.goals,
 			inputSchema: rangeSchema,
 			execute: refusing(async (input) => {
 				const { site, range, filters } = await read(input);
@@ -180,7 +117,7 @@ export async function analyticsTools(organizationId: string) {
 	return {
 		...tools,
 		payments: tool({
-			description: "Revenue, Payments, average order value and time to convert over a Range, with Revenue by Source and country. Amounts are in the currency's minor unit, such as cents. Only for Sites with a Revenue connection.",
+			description: REPORT_DESCRIPTIONS.payments,
 			inputSchema: rangeSchema,
 			execute: refusing(async (input) => {
 				const { site, range, filters } = await read(input);

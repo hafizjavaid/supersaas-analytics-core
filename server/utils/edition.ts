@@ -1,6 +1,7 @@
 import type { H3Event } from "h3";
 import type { BetterAuthPlugin } from "better-auth";
 import type { AiAllowance } from "#layers/core/shared/utils/ai";
+import type { ApiKeyRateLimit } from "#layers/core/shared/types/api-keys";
 import type { DemoTraffic } from "#layers/core/server/utils/demo-traffic";
 import type { EmailTemplateLoader, EmailTemplate } from "#layers/core/server/utils/email";
 import type { SignUpPolicy } from "#layers/core/shared/types/deployment";
@@ -18,6 +19,8 @@ export interface ServerEdition {
 	organizationColumns: object;
 	// Before a hit is stored, after bots and exclusions are dropped.
 	admitHit: (site: OrganizationExtras) => boolean;
+	// On every request with a valid API key (API v1 and MCP). Null sets no limit.
+	rateLimitApiKey: ((event: H3Event, apiKeyId: string) => Promise<ApiKeyRateLimit>) | null;
 	// After a Pageview, Outbound link or Event is stored; never for identify calls or dropped hits.
 	afterCountableHit: (site: { organizationId: string } & OrganizationExtras, origin: string, nowMs: number) => Promise<void>;
 	ai: {
@@ -47,6 +50,7 @@ export interface ServerEdition {
 const edition: ServerEdition = {
 	organizationColumns: {},
 	admitHit: () => true,
+	rateLimitApiKey: null,
 	afterCountableHit: async () => {},
 	ai: {
 		claimQuestion: async () => true,

@@ -17,6 +17,7 @@ const { data, refresh } = await useFetch<OrganizationMembers>(`/api/organization
 });
 
 const inviteOpen = ref(false);
+const { attempt } = useDemo();
 const confirmation = ref<Confirmation | null>(null);
 const roleItems = invitableRoles.map(role => ({ label: memberRoleLabels[role], value: role }));
 
@@ -144,7 +145,7 @@ function memberActions(member: OrganizationMember): DropdownMenuItem[] {
 					v-if="can({ invitation: ['create'] })"
 					label="Invite"
 					icon="i-material-symbols-person-add-outline-rounded"
-					@click="inviteOpen = true"
+					@click="attempt(() => inviteOpen = true)"
 				/>
 			</div>
 		</template>

@@ -92,7 +92,7 @@ describe("app", () => {
 			`/app/${organization.slug}/search`,
 			`/app/${organization.slug}/ask`,
 			...["", "/attribution", "/sharing", "/privacy", "/integrations", "/filtering", "/danger"].map(section => `${sitePath}/settings${section}`),
-			...["", "/members", "/digests", "/danger"].map(section => `/app/${organization.slug}/settings${section}`),
+			...["", "/members", "/digests", "/api-keys", "/danger"].map(section => `/app/${organization.slug}/settings${section}`),
 		]) {
 			expect((await viewer.fetch(path)).status, path).toBe(200);
 		}

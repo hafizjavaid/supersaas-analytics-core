@@ -8,6 +8,8 @@ export const shareLinks = sqliteTable("share_links", {
 	token: text().notNull(),
 	passwordHash: text(),
 	outboundUrl: text(),
+	badge: integer({ mode: "boolean" }).notNull().default(false),
+	badgeClicks: integer().notNull().default(0),
 	createdAt: integer().notNull(),
 }, table => [
 	uniqueIndex("idx_share_links_token").on(table.token),

@@ -5,9 +5,11 @@ definePageMeta({ layout: false });
 // The token is the whole secret, so it must not leave in a Referer header when a viewer follows a link.
 useHead({ meta: [{ name: "referrer", content: "no-referrer" }] });
 
-const token = String(useRoute().params.token);
+const route = useRoute();
+const token = String(route.params.token);
 const api = `/api/share/${encodeURIComponent(token)}`;
-const { data, error, refresh } = await useFetch<SharedDashboard>(api, { key: `share:${token}` });
+// Passed only on the first load, so the server counts one Badge click per page load.
+const { data, error, refresh } = await useFetch<SharedDashboard>(api, { key: `share:${token}`, query: route.query.ref === "badge" ? { ref: "badge" } : {} });
 if (error.value || !data.value) {
 	throw createError({ statusCode: 404, statusMessage: "Share link not found", fatal: true });
 }

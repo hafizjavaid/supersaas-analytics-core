@@ -2,7 +2,7 @@ import { convertToModelMessages, createUIMessageStreamResponse, isStepCount, str
 import type { UIMessage } from "ai";
 import { getConversation, renameConversation, saveMessage } from "#layers/core/server/db/queries/ai";
 import { getSiteById } from "#layers/core/server/db/queries/sites";
-import { AI_PROVIDER_OPTIONS, requireAiMember, resolveAiModel } from "#layers/core/server/utils/ai";
+import { AI_PROVIDER_OPTIONS, cachedInstructions, logCacheUsage, requireAiMember, resolveAiModel, withHistoryBreakpoint } from "#layers/core/server/utils/ai";
 import { analyticsTools } from "#layers/core/server/utils/ai/tools";
 import { aiQuestionSchema } from "#layers/core/shared/schemas/ai";
 
@@ -50,10 +50,12 @@ export default defineEventHandler(async (event) => {
 	const history = [...conversation.messages, question] as UIMessage[];
 	const result = streamText({
 		model,
-		system: systemPrompt(membership.name, site ?? null),
+		instructions: cachedInstructions(systemPrompt(membership.name, site ?? null)),
 		messages: await convertToModelMessages(history, { tools, ignoreIncompleteToolCalls: true }),
 		tools,
 		stopWhen: isStepCount(MAX_STEPS),
+		prepareStep: ({ messages }) => ({ messages: withHistoryBreakpoint(messages) }),
+		onStepEnd: import.meta.dev ? step => logCacheUsage(step.stepNumber, step.usage) : undefined,
 		providerOptions: AI_PROVIDER_OPTIONS,
 	});
 

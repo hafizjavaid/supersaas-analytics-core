@@ -12,6 +12,7 @@ const selectedUrl = ref<string | null>(null);
 const detailOpen = ref(false);
 const sharedUrl = ref<string | null>(null);
 const shareOpen = ref(false);
+const { attempt } = useDemo();
 
 function showDetail(url: string) {
 	selectedUrl.value = url;
@@ -19,8 +20,10 @@ function showDetail(url: string) {
 }
 
 function share(url: string) {
-	sharedUrl.value = url;
-	shareOpen.value = true;
+	attempt(() => {
+		sharedUrl.value = url;
+		shareOpen.value = true;
+	});
 }
 
 const summaryTiles = computed(() => {

@@ -73,3 +73,13 @@ export interface TopListOutput {
 	rows: { label: string; value: number }[];
 	total: number;
 }
+
+// What each report gives, worded once for Ask AI's tools and the MCP tools.
+export const REPORT_DESCRIPTIONS = {
+	listSites: "List the Organization's Sites with their ids, domains and timezones.",
+	summary: "Visitors, Visits, Pageviews, bounce rate and visit duration (with conversion rate and Revenue once set up) over a Range, and the same for the previous period.",
+	timeseries: "Visitors and Pageviews over a Range, per hour for a single day and per day otherwise.",
+	topList: "The top values of one dimension over a Range, such as pages, referrers, channels, countries or browsers.",
+	goals: "Each Goal's conversions, unique Visitors and conversion rate over a Range.",
+	payments: "Revenue, Payments, average order value and time to convert over a Range, with Revenue by Source and country. Amounts are in the currency's minor unit, such as cents. Only for Sites with a Revenue connection.",
+} as const;

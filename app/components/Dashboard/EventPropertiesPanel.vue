@@ -27,7 +27,7 @@ function share(count: number, total: number) {
 
 function filterByEvent() {
 	open.value = false;
-	addFilters([{ dimension: "event", value: props.event.name }]);
+	addFilters([eventRowFilter(props.event)]);
 }
 </script>
 

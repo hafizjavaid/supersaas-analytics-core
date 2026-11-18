@@ -15,13 +15,17 @@ export function hasEmail() {
 	return overrides.email ?? (serverEdition().assumesEmail || isEmailConfigured());
 }
 
+export function hasAi() {
+	return overrides.ai ?? Boolean(useRuntimeConfig().anthropic.apiKey);
+}
+
 export function hasGoogleSearchConsole() {
 	return overrides.googleSearchConsole ?? isGoogleConfigured();
 }
 
 export async function deploymentStatus(): Promise<DeploymentStatus> {
 	return {
-		ai: Boolean(useRuntimeConfig().anthropic.apiKey),
+		ai: hasAi(),
 		signUpOpen: await isSignUpOpen(),
 		email: hasEmail(),
 		googleSearchConsole: hasGoogleSearchConsole(),

@@ -3,6 +3,7 @@ import type { Filter, FilterDimension } from "#layers/core/shared/utils/filters"
 
 export function useDashboardQuery() {
 	const route = useRoute();
+	const { demo } = useEdition();
 
 	const range = computed(() => readDashboardRange(route.query));
 	const filters = computed(() => parseFilters(route.query.f));
@@ -11,6 +12,11 @@ export function useDashboardQuery() {
 	function withoutCustomDates() {
 		const { from: _from, to: _to, ...rest } = route.query;
 		return rest;
+	}
+
+	function addFilters(added: Filter[]) {
+		const next = added.reduce(withFilter, filters.value);
+		return demo.answersFilters(route.path, next) ? setFilters(next) : demo.signUp();
 	}
 
 	function setFilters(next: Filter[]) {
@@ -24,7 +30,7 @@ export function useDashboardQuery() {
 		reportQuery,
 		selectRange: (key: Exclude<RangeKey, "custom">) => navigateTo({ query: { ...withoutCustomDates(), range: key } }),
 		selectCustomRange: (from: string, to: string) => navigateTo({ query: { ...route.query, range: "custom", from, to } }),
-		addFilters: (added: Filter[]) => setFilters(added.reduce(withFilter, filters.value)),
+		addFilters,
 		removeFilter: (dimension: FilterDimension) => setFilters(withoutFilter(filters.value, dimension)),
 		clearFilters: () => setFilters([]),
 	};

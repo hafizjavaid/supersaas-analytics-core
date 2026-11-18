@@ -169,6 +169,20 @@
       "when": 1793687431608,
       "tag": "0023_drop_license_orders",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
+      "when": 1794637696824,
+      "tag": "0024_messy_scalphunter",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "6",
+      "when": 1794647984878,
+      "tag": "0025_spicy_synch",
+      "breakpoints": true
     }
   ]
 }
