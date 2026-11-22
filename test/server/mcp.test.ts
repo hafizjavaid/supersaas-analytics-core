@@ -76,6 +76,14 @@ describe("the handshake", () => {
 		expect(topList.inputSchema.properties.filters!.description).toContain("dimension:value");
 		expect(topList.inputSchema.properties.dimension!.description).toContain("Dimension");
 	});
+
+	it("titles every tool and marks it read-only, as directory reviewers require", async () => {
+		const response = await mcpRequest<{ tools: { title?: string; annotations?: { title?: string; readOnlyHint?: boolean; openWorldHint?: boolean } }[] }>(key, "tools/list");
+		for (const tool of response.result!.tools) {
+			expect(tool.title).toBeTruthy();
+			expect(tool.annotations).toEqual({ title: tool.title, readOnlyHint: true, openWorldHint: false });
+		}
+	});
 });
 
 describe("calling tools", () => {

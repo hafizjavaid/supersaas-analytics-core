@@ -91,30 +91,33 @@ export async function analyticsMcpServer(event: H3Event, apiKey: McpApiKey) {
 	const { readSite, readSiteAndRange } = siteReader(organizationId);
 	const revenueConnections = await listOrganizationRevenueConnections(organizationId);
 	const server = new McpServer({ name: "supersaas-analytics", version: "1.0.0" }, { instructions: INSTRUCTIONS });
-	const readOnly = { readOnlyHint: true, openWorldHint: false };
+	const readOnly = (title: string) => ({ title, readOnlyHint: true, openWorldHint: false });
 
 	server.registerTool("list_sites", {
+		title: "List sites",
 		description: REPORT_DESCRIPTIONS.listSites,
 		inputSchema: z.object({}),
 		outputSchema: apiV1SitesSchema,
-		annotations: readOnly,
+		annotations: readOnly("List sites"),
 	}, toolHandler(event, apiKey, async () => await readApiV1Sites(organizationId)));
 
 	server.registerTool("summary", {
+		title: "Site summary",
 		description: `${REPORT_DESCRIPTIONS.summary} ${RANGE_AND_FILTERS}`,
 		inputSchema: reportInput,
 		outputSchema: apiV1SummarySchema,
-		annotations: readOnly,
+		annotations: readOnly("Site summary"),
 	}, toolHandler(event, apiKey, async (input: ReportInput) => {
 		const { site, range, filters } = await readSiteAndRange(input);
 		return await readApiV1Summary(site, range, filters);
 	}));
 
 	server.registerTool("timeseries", {
+		title: "Traffic over time",
 		description: `${REPORT_DESCRIPTIONS.timeseries} ${RANGE_AND_FILTERS}`,
 		inputSchema: reportInput,
 		outputSchema: apiV1TimeseriesSchema,
-		annotations: readOnly,
+		annotations: readOnly("Traffic over time"),
 	}, toolHandler(event, apiKey, async (input: ReportInput) => {
 		const { site, range, filters } = await readSiteAndRange(input);
 		return await readApiV1Timeseries(site, range, filters);
@@ -124,38 +127,42 @@ export async function analyticsMcpServer(event: H3Event, apiKey: McpApiKey) {
 		dimension: z.enum(TOP_LIST_DIMENSIONS).describe("The Dimension to rank, the axis traffic is broken down by"),
 	});
 	server.registerTool("top_list", {
+		title: "Top list",
 		description: `${REPORT_DESCRIPTIONS.topList} Gives the ten largest values of the Dimension. ${RANGE_AND_FILTERS}`,
 		inputSchema: topListInput,
 		outputSchema: apiV1TopListSchema,
-		annotations: readOnly,
+		annotations: readOnly("Top list"),
 	}, toolHandler(event, apiKey, async (input: z.infer<typeof topListInput>) => {
 		const { site, range, filters } = await readSiteAndRange(input);
 		return await readApiV1TopList(site, range, filters, input.dimension);
 	}));
 
 	server.registerTool("goals", {
+		title: "Goal conversions",
 		description: `${REPORT_DESCRIPTIONS.goals} ${RANGE_AND_FILTERS}`,
 		inputSchema: reportInput,
 		outputSchema: apiV1GoalsSchema,
-		annotations: readOnly,
+		annotations: readOnly("Goal conversions"),
 	}, toolHandler(event, apiKey, async (input: ReportInput) => {
 		const { site, range, filters } = await readSiteAndRange(input);
 		return await readApiV1Goals(site, range, filters);
 	}));
 
 	server.registerTool("funnels", {
+		title: "List funnels",
 		description: "List a Site's Funnels with their steps. Pass a Funnel's id to the funnel tool for its conversion.",
 		inputSchema: siteInput,
 		outputSchema: apiV1FunnelsSchema,
-		annotations: readOnly,
+		annotations: readOnly("List funnels"),
 	}, toolHandler(event, apiKey, async (input: z.infer<typeof siteInput>) => await readApiV1Funnels(await readSite(input.siteId))));
 
 	const funnelInput = reportInput.extend({ funnelId: z.string().describe("The Funnel's id, from the funnels tool") });
 	server.registerTool("funnel", {
+		title: "Funnel conversion",
 		description: `A Funnel's steps and conversion over a Range: how many people entered, continued and completed. ${RANGE_AND_FILTERS}`,
 		inputSchema: funnelInput,
 		outputSchema: apiV1FunnelReportSchema,
-		annotations: readOnly,
+		annotations: readOnly("Funnel conversion"),
 	}, toolHandler(event, apiKey, async (input: z.infer<typeof funnelInput>) => {
 		const { site, range, filters } = await readSiteAndRange(input);
 		const funnel = await getFunnel(site.id, input.funnelId);
@@ -167,10 +174,11 @@ export async function analyticsMcpServer(event: H3Event, apiKey: McpApiKey) {
 
 	if (revenueConnections.length > 0) {
 		server.registerTool("payments", {
+			title: "Revenue",
 			description: `${REPORT_DESCRIPTIONS.payments} ${RANGE_AND_FILTERS}`,
 			inputSchema: reportInput,
 			outputSchema: apiV1PaymentsSchema,
-			annotations: readOnly,
+			annotations: readOnly("Revenue"),
 		}, toolHandler(event, apiKey, async (input: ReportInput) => {
 			const { site, range, filters } = await readSiteAndRange(input);
 			const connection = revenueConnections.find(candidate => candidate.siteId === site.id);
@@ -182,10 +190,11 @@ export async function analyticsMcpServer(event: H3Event, apiKey: McpApiKey) {
 	}
 
 	server.registerTool("live", {
+		title: "Live visitors",
 		description: "How many Visitors are on a Site now: those seen in the last 5 minutes.",
 		inputSchema: siteInput,
 		outputSchema: apiV1LiveSchema,
-		annotations: readOnly,
+		annotations: readOnly("Live visitors"),
 	}, toolHandler(event, apiKey, async (input: z.infer<typeof siteInput>) => await readApiV1Live(await readSite(input.siteId))));
 
 	return server;

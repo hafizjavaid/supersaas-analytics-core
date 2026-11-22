@@ -1,0 +1,42 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.supersaasanalytics/analytics",
+  "title": "Supersaas Analytics",
+  "description": "Read-only, cookieless web analytics: traffic, sources, pages, Goals, Funnels and revenue per site.",
+  "version": "1.0.0",
+  "websiteUrl": "https://supersaasanalytics.com/docs/api/mcp",
+  "repository": {
+    "url": "https://github.com/hafizjavaid/supersaas-analytics-core",
+    "source": "github",
+    "id": "1450998203"
+  },
+  "icons": [
+    {
+      "src": "https://supersaasanalytics.com/favicon.svg",
+      "mimeType": "image/svg+xml",
+      "sizes": ["any"]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://supersaasanalytics.com/mcp",
+      "headers": [
+        {
+          "name": "Authorization",
+          "description": "An API key from your Organization's Settings → API keys, as a bearer token",
+          "value": "Bearer {api_key}",
+          "isRequired": true,
+          "isSecret": true,
+          "variables": {
+            "api_key": {
+              "description": "Your Supersaas Analytics API key (starts with ssa_)",
+              "isRequired": true,
+              "isSecret": true
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
